@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media List</title>
+    <style>
+        /* Genel stil */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        /* Medya kartları stili */
+        .media-card {
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            padding: 10px;
+            max-width: 320px;
+        }
+
+        .media-card video {
+            width: 100%;
+            height: auto;
+        }
+
+        .media-card-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Media List</h1>
+    <div id="media-list" class="media-list"></div>
+
+    <script>
+        const apiEndpoint = 'http://192.168.100.242:5000';  // Backend API endpoint
+
+        async function fetchMedia() {
+            try {
+                const response = await fetch(`${apiEndpoint}/media`);  // API'den medya verilerini alıyoruz
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();  // JSON formatında veriyi alıyoruz
+                console.log("Media Data:", data);
+
+                // Medyaları göster
+                if (Array.isArray(data.media)) {
+                    const mediaList = document.getElementById('media-list');
+                    data.media.forEach(media => {
+                        const mediaCard = document.createElement('div');
+                        mediaCard.classList.add('media-card');
+
+                        // Video bileşeni
+                        const mediaVideo = document.createElement('video');
+                        mediaVideo.src = `${apiEndpoint}/${media.video}`;  // Video dosyasının yolu
+                        mediaVideo.controls = true; // Oynatma kontrolleri
+                        mediaVideo.alt = media.title;
+
+                        const mediaTitle = document.createElement('p');
+                        mediaTitle.classList.add('media-card-title');
+                        mediaTitle.textContent = media.title;
+
+                        mediaCard.appendChild(mediaVideo);
+                        mediaCard.appendChild(mediaTitle);
+                        mediaList.appendChild(mediaCard);
+                    });
+                } else {
+                    console.error("data.media is not an array:", data.media);
+                }
+
+            } catch (error) {
+                console.error('Error fetching media:', error);
+            }
+        }
+
+        window.onload = () => {
+            fetchMedia(); // Medyaları al
+        };
+    </script>
+</body>
+</html>
