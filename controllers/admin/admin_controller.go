@@ -1,38 +1,17 @@
-package controllers
+package admin
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 	"time"
-
 	config "tm/db"
 	model "tm/models"
+	"tm/utils"
 
 	"github.com/gofiber/fiber/v2"
-	"golang.org/x/exp/rand"
 )
 
-func saveFile(c *fiber.Ctx, fieldName, dir string) (string, error) {
-	file, err := c.FormFile(fieldName)
-	if err != nil {
-		return "", err
-	}
-	ext := filepath.Ext(file.Filename)
-
-	newFileName := fmt.Sprintf("%d_%d%s", time.Now().Unix(), rand.Intn(1000), ext)
-
-	filePath := fmt.Sprintf("%s/%s", dir, newFileName)
-
-	if err := c.SaveFile(file, filePath); err != nil {
-		return "", err
-	}
-
-	return filePath, nil
-}
-
 func CreateNews(c *fiber.Ctx) error {
-	filePath, err := saveFile(c, "image", "./uploads")
+	filePath, err := utils.SaveFile(c, "image", "./uploads")
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot upload image"})
 	}
@@ -54,7 +33,7 @@ func CreateNews(c *fiber.Ctx) error {
 }
 
 func CreateBanner(c *fiber.Ctx) error {
-	filePath, err := saveFile(c, "bannerimg", "./uploads/banners/")
+	filePath, err := utils.SaveFile(c, "bannerimg", "./uploads/banners/")
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Cannot upload image"})
 	}
@@ -78,8 +57,7 @@ func CreateBanner(c *fiber.Ctx) error {
 }
 
 func CreateEmployer(c *fiber.Ctx) error {
-	// Dosya yükleme işlemi
-	filePath, err := saveFile(c, "image", "./uploads/employers")
+	filePath, err := utils.SaveFile(c, "image", "./uploads/employers")
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot upload image"})
 	}
@@ -103,7 +81,7 @@ func CreateEmployer(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(employer)
 }
 func CreateMedia(c *fiber.Ctx) error {
-	filePath, err := saveFile(c, "video", "./uploads/media")
+	filePath, err := utils.SaveFile(c, "video", "./uploads/media")
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot upload video file"})
 	}
@@ -128,65 +106,4 @@ func CreateMedia(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(media)
-}
-func Play(c *fiber.Ctx) error {
-	fileName := c.Params("filename")
-	filePath := filepath.Join("./uploads/media", fileName)
-
-	// Check if file exists
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "File not found"})
-	}
-
-	return c.SendFile(filePath, false)
-}
-
-func Home_Page(c *fiber.Ctx) error {
-	username := c.Cookies("id")
-
-	if username == "" {
-		cookie := new(fiber.Cookie)
-		cookie.Name = "id"
-		cookie.Value = "kerim"
-		cookie.Expires = time.Now().Add(24 * time.Hour)
-
-		// Cookie'yi ekle
-		c.Cookie(cookie)
-		return c.SendString(cookie.Value)
-
-	}
-
-	var news []model.NewsSchema
-	if err := config.DB.Find(&news).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Cannot fetch news"})
-	}
-
-	var banner []model.BannerSchema
-	if err := config.DB.Find(&banner).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Cannot fetch banner"})
-	}
-
-	var media []model.MediaSchema
-	if err := config.DB.Find(&media).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Cannot fetch media"})
-	}
-
-	var employ []model.EmployerSchema
-	if err := config.DB.Find(&employ).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Cannot fetch employ"})
-	}
-
-	ip := os.Getenv("HOST")
-	port := os.Getenv("PORT")
-
-	for i := range media {
-		media[i].Video = fmt.Sprintf("http://%s%s/%s", ip, port, media[i].Video)
-	}
-
-	return c.JSON(fiber.Map{
-		"news":   news,
-		"banner": banner,
-		"media":  media,
-		"employ": employ,
-	})
 }
