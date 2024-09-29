@@ -3,96 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Media List</title>
-    <style>
-        /* Genel stil */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-
-        h1 {
-            color: #333;
-        }
-
-        /* Medya kartları stili */
-        .media-card {
-            display: flex;
-            flex-direction: column;
-            background-color: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            margin: 10px;
-            padding: 10px;
-            max-width: 320px;
-        }
-
-        .media-card video {
-            width: 100%;
-            height: auto;
-        }
-
-        .media-card-title {
-            font-size: 16px;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-    </style>
+    <title>Upload File</title>
 </head>
 <body>
-    <h1>Media List</h1>
-    <div id="media-list" class="media-list"></div>
+    <h1>Upload News Image</h1>
+    <form id="newsForm">
+        <label for="title">Title:</label><br>
+        <input type="text" id="title" name="title" required><br><br>
 
-    <script>
-        const apiEndpoint = 'http://192.168.100.242:5000';  // Backend API endpoint
+        <label for="content">Content:</label><br>
+        <textarea id="content" name="content" required></textarea><br><br>
 
-        async function fetchMedia() {
-            try {
-                const response = await fetch(`${apiEndpoint}/media`);  // API'den medya verilerini alıyoruz
+        <label for="image">Choose Image:</label><br>
+        <input type="file" id="image" name="image" accept="image/*" required><br><br>
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+        <input type="submit" value="Upload News">
+    </form>
 
-                const data = await response.json();  // JSON formatında veriyi alıyoruz
-                console.log("Media Data:", data);
+    <h1>Upload Banner Image</h1>
+    <form id="bannerForm">
+        <label for="title">Banner Title:</label><br>
+        <input type="text" id="title" name="title" required><br><br>
 
-                // Medyaları göster
-                if (Array.isArray(data.media)) {
-                    const mediaList = document.getElementById('media-list');
-                    data.media.forEach(media => {
-                        const mediaCard = document.createElement('div');
-                        mediaCard.classList.add('media-card');
+        <label for="description">Banner Description:</label><br>
+        <textarea id="description" name="description" required></textarea><br><br>
 
-                        // Video bileşeni
-                        const mediaVideo = document.createElement('video');
-                        mediaVideo.src = `${apiEndpoint}/${media.video}`;  // Video dosyasının yolu
-                        mediaVideo.controls = true; // Oynatma kontrolleri
-                        mediaVideo.alt = media.title;
+        <label for="bannerimg">Choose Banner Image:</label><br>
+        <input type="file" id="bannerimg" name="bannerimg" accept="image/*" required><br><br>
 
-                        const mediaTitle = document.createElement('p');
-                        mediaTitle.classList.add('media-card-title');
-                        mediaTitle.textContent = media.title;
+        <label for="link">Banner Link:</label><br>
+        <input type="url" id="link" name="link"><br><br>
 
-                        mediaCard.appendChild(mediaVideo);
-                        mediaCard.appendChild(mediaTitle);
-                        mediaList.appendChild(mediaCard);
-                    });
-                } else {
-                    console.error("data.media is not an array:", data.media);
-                }
+        <input type="submit" value="Upload Banner">
+    </form>
 
-            } catch (error) {
-                console.error('Error fetching media:', error);
-            }
-        }
+    <h1>Upload Employer Image</h1>
+    <form id="employerForm">
+        <label for="name">Employer Name:</label><br>
+        <input type="text" id="name" name="name" required><br><br>
 
-        window.onload = () => {
-            fetchMedia(); // Medyaları al
-        };
-    </script>
+        <label for="position">Employer Position:</label><br>
+        <input type="text" id="position" name="position" required><br><br>
+
+        <label for="image">Choose Employer Image:</label><br>
+        <input type="file" id="image" name="image" accept="image/*" required><br><br>
+
+        <input type="submit" value="Upload Employer">
+    </form>
+
+    <h1>Upload Media</h1>
+    <form id="mediaForm">
+        <label for="title">Media Title:</label><br>
+        <input type="text" id="title" name="title" required><br><br>
+
+        <label for="video">Choose Media File:</label><br>
+        <input type="file" id="video" name="video" accept="video/*" required><br><br>
+
+        <input type="submit" value="Upload Media">
+    </form>
+
+    <script src="upload.js"></script>
 </body>
 </html>

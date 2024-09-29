@@ -140,7 +140,7 @@
 
         async function fetchData() {
             try {
-                const response = await fetch(`${apiEndpoint}/news`);  // API'den haberleri ve banner'ları alıyoruz
+                const response = await fetch(`${apiEndpoint}/`);  // API'den haberleri ve banner'ları alıyoruz
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
