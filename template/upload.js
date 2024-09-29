@@ -24,15 +24,15 @@ async function handleFormSubmit(event, url, formId) {
 
 // Add event listeners to forms
 document.getElementById('newsForm').addEventListener('submit', function(event) {
-    handleFormSubmit(event, 'http://192.168.0.101:5000/api/admin/news', 'newsForm');
+    handleFormSubmit(event, 'http://192.168.100.242:5000/api/admin/news', 'newsForm');
 });
 
 document.getElementById('bannerForm').addEventListener('submit', function(event) {
-    handleFormSubmit(event, 'http://192.168.0.101:5000/api/admin/banner', 'bannerForm');
+    handleFormSubmit(event, 'http://192.168.100.242:5000/api/admin/banner', 'bannerForm');
 });
 
 document.getElementById('employerForm').addEventListener('submit', function(event) {
-    handleFormSubmit(event, 'http://192.168.0.101:5000/api/admin/employer', 'employerForm');
+    handleFormSubmit(event, 'http://192.168.100.242:5000/api/admin/employer', 'employerForm');
 });
 
 document.getElementById('mediaForm').addEventListener('submit', function(event) {

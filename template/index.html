@@ -135,12 +135,12 @@
     </section>
 
     <script>
-        const apiEndpoint = 'http://192.168.0.101:5000';  // Backend API endpoint
+        const apiEndpoint = 'http://192.168.100.242:5000'; 
         let currentSlide = 0;
 
         async function fetchData() {
             try {
-                const response = await fetch(`${apiEndpoint}/`);  // API'den haberleri ve banner'ları alıyoruz
+                const response = await fetch(`${apiEndpoint}/`); 
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);

@@ -8,18 +8,24 @@ type MainSchema struct {
 }
 
 type NewsSchema struct {
-	ID          string `json:"id" gorm:"primaryKeys"`
-	Image       string `json:"image"`
-	Description string `json:"description"`
-	Title       string `json:"title"`
-	Date        string `json:"date"`
+	ID             string `json:"id" gorm:"primaryKeys"`
+	Image          string `json:"image"`
+	Description    string `json:"description"`
+	Title          string `json:"title"`
+	Date           string `json:"date"`
+	EN_title       string `json:"entitle"`
+	RU_title       string `json:"rutitle"`
+	EN_description string `json:"endescription"`
+	RU_description string `json:"rudescription"`
 }
 
 type MediaSchema struct {
-	ID    string `json:"id"`
-	Video string `json:"video"`
-	Title string `json:"title"`
-	Date  string `json:"date"`
+	ID       string `json:"id"`
+	Video    string `json:"video"`
+	Title    string `json:"title"`
+	EN_title string `json:"entitle"`
+	RU_title string `json:"rutitle"`
+	Date     string `json:"date"`
 }
 
 type BannerSchema struct {
