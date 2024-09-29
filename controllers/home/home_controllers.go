@@ -36,15 +36,15 @@ func Home_Page(c *fiber.Ctx) error {
 
 	// Update media URLs
 	for i := range media {
-		media[i].Video = fmt.Sprintf("http://%s:%s/%s", ip, port, media[i].Video)
+		media[i].Video = fmt.Sprintf("http://%s%s/%s", ip, port, media[i].Video)
 	}
 
 	// Update banner URLs
 	for i := range banner {
-		banner[i].Image = fmt.Sprintf("http://%s:%s/%s", ip, port, banner[i].Image)
+		banner[i].Image = fmt.Sprintf("http://%s%s/%s", ip, port, banner[i].Image)
 	}
 	for i := range news {
-		news[i].Image = fmt.Sprintf("http://%s:%s/%s", ip, port, news[i].Image)
+		news[i].Image = fmt.Sprintf("http://%s%s/%s", ip, port, news[i].Image)
 	}
 	return c.JSON(fiber.Map{
 		"news":   news,

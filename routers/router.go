@@ -18,6 +18,7 @@ func InitRouters(app *fiber.App) {
 
 	app.Get("/", middleware.FakeUser, home.Home_Page)
 	app.Get("/uploads/media/:filename", utils.Play)
+	app.Static("/uploads", "./uploads")
 
 	adminR := app.Group("/api/admin")
 	adminR.Post("/banner", admin.CreateBanner)
