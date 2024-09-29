@@ -1,25 +1,24 @@
 package middleware
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 func FakeUser(c *fiber.Ctx) error {
-	// Check if the "id" cookie exists
-	username := c.Cookies("id")
+	username := c.Cookies("test")
+	id := fmt.Sprintf("%d", time.Now().Unix())
 
-	// If the cookie doesn't exist, create and set it
 	if username == "" {
 		cookie := new(fiber.Cookie)
-		cookie.Name = "id"
-		cookie.Value = "kerim" // Set default value
+		cookie.Name = "test"
+		cookie.Value = id
 		cookie.Expires = time.Now().Add(24 * time.Hour)
-		cookie.HTTPOnly = true // Optional for security
+		cookie.HTTPOnly = true
 		c.Cookie(cookie)
 	}
 
-	// Continue to the next handler (e.g., Home_Page)
 	return c.Next()
 }

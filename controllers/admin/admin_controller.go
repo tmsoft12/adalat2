@@ -23,7 +23,7 @@ func CreateNews(c *fiber.Ctx) error {
 
 	news.Image = filePath
 	news.ID = fmt.Sprintf("%d", time.Now().Unix())
-	news.Date = time.Now().Format("2006-01-02")
+	news.Date = time.Now().Format("02.01.2006 15:04")
 
 	if err := config.DB.Create(news).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Cannot create news"})

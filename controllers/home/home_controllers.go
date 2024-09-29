@@ -34,12 +34,10 @@ func Home_Page(c *fiber.Ctx) error {
 	ip := os.Getenv("HOST")
 	port := os.Getenv("PORT")
 
-	// Update media URLs
 	for i := range media {
 		media[i].Video = fmt.Sprintf("http://%s%s/%s", ip, port, media[i].Video)
 	}
 
-	// Update banner URLs
 	for i := range banner {
 		banner[i].Image = fmt.Sprintf("http://%s%s/%s", ip, port, banner[i].Image)
 	}
