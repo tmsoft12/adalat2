@@ -44,6 +44,9 @@ func Home_Page(c *fiber.Ctx) error {
 	for i := range news {
 		news[i].Image = fmt.Sprintf("http://%s%s/%s", ip, port, news[i].Image)
 	}
+	for i := range employ {
+		employ[i].Image = fmt.Sprintf("http://%s%s/%s", ip, port, employ[i].Image)
+	}
 	return c.JSON(fiber.Map{
 		"news":   news,
 		"banner": banner,

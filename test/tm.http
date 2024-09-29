@@ -1,0 +1,9 @@
+POST http://192.168.0.101:5000/api/admin/news
+Content-Type: application/json
+
+{
+    "id": "T-shirt",
+    "image": 19.99,
+    "description": 100,
+    
+}
