@@ -62,13 +62,11 @@ func CreateEmployer(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot upload image"})
 	}
 
-	// Employer verilerini body'den alma
 	employer := new(model.EmployerSchema)
 	if err := c.BodyParser(employer); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse request"})
 	}
 
-	// Employer verilerini ayarlama
 	employer.Image = filePath
 	employer.ID = fmt.Sprintf("%d", time.Now().Unix())
 
@@ -91,7 +89,6 @@ func CreateMedia(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse request"})
 	}
 
-	// Title alanını kontrol et
 	if media.Title == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Title is required"})
 	}

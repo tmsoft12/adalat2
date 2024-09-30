@@ -6,7 +6,10 @@ type MainSchema struct {
 	Media    []MediaSchema    `json:"media"`
 	Employer []EmployerSchema `json:"employer"`
 }
-
+type Views struct {
+	ID     int    `json:"id"`
+	UserID string `josn:"userid"`
+}
 type NewsSchema struct {
 	ID             string `json:"id" gorm:"primaryKeys"`
 	Image          string `json:"image"`
@@ -17,6 +20,7 @@ type NewsSchema struct {
 	RU_title       string `json:"rutitle"`
 	EN_description string `json:"endescription"`
 	RU_description string `json:"rudescription"`
+	Count          string `jsin:"count"`
 }
 
 type MediaSchema struct {

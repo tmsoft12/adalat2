@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Page</title>
+</head>
+<body>
+    <h1>Language Selection</h1>
+    <select id="languageSelector">
+        <option value="tm">Turkmen</option>
+        <option value="en">English</option>
+        <option value="ru">Russian</option>
+    </select>
+
+    <h1>News</h1>
+    <div id="news"></div>
+
+    <h1>Banners</h1>
+    <div id="banners"></div>
+
+    <h1>Media</h1>
+    <div id="media"></div>
+
+    <h1>Employers</h1>
+    <div id="employers"></div>
+
+    <script>
+        const languageSelector = document.getElementById('languageSelector');
+
+        languageSelector.addEventListener('change', (event) => {
+            fetchData(event.target.value);
+        });
+
+        async function fetchData(language) {
+            try {
+                const response = await fetch('http://192.168.100.242:5000', {
+                    method: 'GET',
+                    headers: {
+                        'Accept-Language': language
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                displayData(data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        function displayData(data) {
+            const newsContainer = document.getElementById('news');
+            const bannersContainer = document.getElementById('banners');
+            const mediaContainer = document.getElementById('media');
+            const employersContainer = document.getElementById('employers');
+
+            // Clear previous content
+            newsContainer.innerHTML = '';
+            bannersContainer.innerHTML = '';
+            mediaContainer.innerHTML = '';
+            employersContainer.innerHTML = '';
+
+            // Display News
+            if (data.news) {
+                data.news.forEach(item => {
+                    newsContainer.innerHTML += `
+                        <div>
+                            <h2>${item.title}</h2>
+                            <p>${item.description}</p>
+                            <img src="${item.image}" alt="${item.title}" width="200">
+                            <p>Date: ${item.date}</p>
+                        </div>
+                    `;
+                });
+                console.log(data.news)
+
+            }
+
+            // Display Banners
+            if (data.banner) {
+                data.banner.forEach(item => {
+                    bannersContainer.innerHTML += `
+                        <div>
+                            <h2>${item.title}</h2>
+                            <p>${item.description}</p>
+                            <img src="${item.image}" alt="${item.title}" width="200">
+                        </div>
+                    `;
+                });
+            }
+
+            // Display Media
+            if (data.media) {
+                data.media.forEach(item => {
+                    mediaContainer.innerHTML += `
+                        <div>
+                            <h2>${item.title}</h2>
+                            <video controls width="300">
+                                <source src="${item.video}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                            <p>Date: ${item.date}</p>
+                        </div>
+                    `;
+                });
+            }
+
+            // Display Employers
+            if (data.employ) {
+                data.employ.forEach(item => {
+                    employersContainer.innerHTML += `
+                        <div>
+                            <h2>${item.name}</h2>
+                            <p>${item.major}</p>
+                            <img src="${item.image}" alt="${item.name}" width="200">
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        // Initial fetch with default language
+        fetchData('tm'); // Change 'en' to 'tr' or 'ru' for default language
+    </script>
+</body>
+</html>

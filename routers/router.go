@@ -3,6 +3,7 @@ package routers
 import (
 	"tm/controllers/admin"
 	"tm/controllers/home"
+	"tm/controllers/news"
 	"tm/middleware"
 	"tm/utils"
 
@@ -19,10 +20,14 @@ func InitRouters(app *fiber.App) {
 	app.Get("/", middleware.FakeUser, home.Home_Page)
 	app.Get("/uploads/media/:filename", utils.Play)
 	app.Static("/uploads", "./uploads")
+	app.Get("/views/:id", middleware.FakeUser, news.ViewsAll)
 
+	newsP := app.Group("/api/news")
+	newsP.Get("/", news.GetAllNews)
 	adminR := app.Group("/api/admin")
 	adminR.Post("/banner", admin.CreateBanner)
 	adminR.Post("/employer", admin.CreateEmployer)
 	adminR.Post("/news", admin.CreateNews)
 	adminR.Post("/media", admin.CreateMedia)
+
 }
