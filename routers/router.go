@@ -20,10 +20,11 @@ func InitRouters(app *fiber.App) {
 	app.Get("/", middleware.FakeUser, home.Home_Page)
 	app.Get("/uploads/media/:filename", utils.Play)
 	app.Static("/uploads", "./uploads")
-	app.Get("/views/:id", middleware.FakeUser, news.ViewsAll)
 
 	newsP := app.Group("/api/news")
 	newsP.Get("/", news.GetAllNews)
+	newsP.Get("/:id", middleware.FakeUser, news.ViewsAll)
+
 	adminR := app.Group("/api/admin")
 	adminR.Post("/banner", admin.CreateBanner)
 	adminR.Post("/employer", admin.CreateEmployer)

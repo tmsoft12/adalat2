@@ -8,6 +8,7 @@ import (
 	model "tm/models"
 
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 )
 
 func GetAllNews(c *fiber.Ctx) error {
@@ -34,51 +35,65 @@ func GetAllNews(c *fiber.Ctx) error {
 }
 
 func ViewsAll(c *fiber.Ctx) error {
-	var news model.NewsSchema // Tek bir haber için struct
-	var views model.ViewsNews // Görüntüleme kaydı struct
+	var news model.NewsSchema
 	id := c.Params("id")      // URL'den gelen haber ID'si
 	user := c.Cookies("test") // Çerezden gelen kullanıcı bilgisi
 
 	userID, err := strconv.Atoi(user)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid user ID",
+			"error": "Invalid user ID format",
 		})
 	}
 
-	// Haber ID'sini string'ten int'e dönüştürme
-	ID, err := strconv.Atoi(id)
+	NewsID, err := strconv.Atoi(id)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid news ID",
+			"error": "Invalid news ID format",
 		})
 	}
 
-	// Haber var mı kontrol et
-	result := config.DB.Where("id = ?", ID).First(&news)
+	// Haber verisini almak için sorgu
+	result := config.DB.Where("id = ?", NewsID).First(&news)
 	if result.Error != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"error": "News not found",
+		if result.Error == gorm.ErrRecordNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"error": fmt.Sprintf("No news found with ID %d", NewsID),
+			})
+		}
+		// Diğer hata durumları
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Error fetching news: " + result.Error.Error(),
 		})
 	}
 
-	// Görüntüleme kaydının zaten olup olmadığını kontrol et
-	var existingView model.ViewsNews
-	viewCheck := config.DB.Where("id = ? AND user_id = ?", ID, userID).First(&existingView)
-	if viewCheck.Error == nil { // Eğer kayıt varsa
+	var existingView model.Vi
+	viewCheck := config.DB.Where("news_id = ? AND user_id = ?", NewsID, userID).First(&existingView)
+	if viewCheck.Error == nil {
 		return c.Status(200).JSON(fiber.Map{
+			"news":    news,
 			"message": "View already recorded",
 		})
-	}
-
-	views.UserID = userID // Kullanıcı kimliği
-	views.ID = ID         // Hangi habere ait olduğunu belirt
-
-	if err := config.DB.Create(&views).Error; err != nil {
+	} else if viewCheck.Error != gorm.ErrRecordNotFound {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to create view",
+			"error": "Error checking view record: " + viewCheck.Error.Error(),
 		})
 	}
+
+	// Yeni görüntüleme kaydı oluştur
+	view := model.Vi{
+		UserID: userID,
+		NewsID: NewsID,
+	}
+	if err := config.DB.Create(&view).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to create view: " + err.Error(),
+		})
+	}
+	ip := os.Getenv("HOST")
+	port := os.Getenv("PORT")
+
+	news.Image = fmt.Sprintf("http://%s%s/%s", ip, port, news.Image)
 
 	return c.Status(200).JSON(fiber.Map{
 		"news": news,

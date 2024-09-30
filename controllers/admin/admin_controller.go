@@ -22,7 +22,7 @@ func CreateNews(c *fiber.Ctx) error {
 	}
 
 	news.Image = filePath
-	news.ID = fmt.Sprintf("%d", time.Now().Unix())
+	news.ID = int(time.Now().Unix()) // ID'yi int olarak ayarla
 	news.Date = time.Now().Format("02.01.2006 15:04")
 
 	if err := config.DB.Create(news).Error; err != nil {

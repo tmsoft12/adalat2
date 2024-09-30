@@ -6,13 +6,14 @@ package model
 //		Media    []MediaSchema    `json:"media"`
 //		Employer []EmployerSchema `json:"employer"`
 //	}
-type ViewsNews struct {
-	ID     int `json:"id"`
-	UserID int `json:"userid"`
+type Vi struct {
+	ID     int `json:"id" gorm:"primaryKey;autoIncrement"` // Otomatik artan birincil anahtar
+	UserID int `json:"user_id"`                            // Kullanıcı ID'si
+	NewsID int `json:"news_id"`                            // Haber ID'si (bu ilişkilendirme için gerekli olabilir)
 }
 
 type NewsSchema struct {
-	ID             string `json:"id" gorm:"primaryKeys"`
+	ID             int    `json:"id" gorm:"primaryKey"` // Birincil anahtar, genellikle int veya UUID olarak tanımlanır
 	Image          string `json:"image"`
 	Description    string `json:"description"`
 	Title          string `json:"title"`
@@ -21,7 +22,7 @@ type NewsSchema struct {
 	RU_title       string `json:"rutitle"`
 	EN_description string `json:"endescription"`
 	RU_description string `json:"rudescription"`
-	Count          string `json:"count"`
+	Count          int    `json:"count"`
 }
 
 type MediaSchema struct {
