@@ -1,15 +1,16 @@
 package model
 
-type MainSchema struct {
-	Banner   []BannerSchema   `json:"banner"`
-	News     []NewsSchema     `json:"news"`
-	Media    []MediaSchema    `json:"media"`
-	Employer []EmployerSchema `json:"employer"`
+//	type MainSchema struct {
+//		Banner   []BannerSchema   `json:"banner"`
+//		News     []NewsSchema     `json:"news"`
+//		Media    []MediaSchema    `json:"media"`
+//		Employer []EmployerSchema `json:"employer"`
+//	}
+type ViewsNews struct {
+	ID     int `json:"id"`
+	UserID int `json:"userid"`
 }
-type Views struct {
-	ID     int    `json:"id"`
-	UserID string `josn:"userid"`
-}
+
 type NewsSchema struct {
 	ID             string `json:"id" gorm:"primaryKeys"`
 	Image          string `json:"image"`
@@ -20,7 +21,7 @@ type NewsSchema struct {
 	RU_title       string `json:"rutitle"`
 	EN_description string `json:"endescription"`
 	RU_description string `json:"rudescription"`
-	Count          string `jsin:"count"`
+	Count          string `json:"count"`
 }
 
 type MediaSchema struct {

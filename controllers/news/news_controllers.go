@@ -34,40 +34,52 @@ func GetAllNews(c *fiber.Ctx) error {
 }
 
 func ViewsAll(c *fiber.Ctx) error {
-	var news []model.NewsSchema // Use a slice to fetch multiple records
-	var views model.Views
-	id := c.Params("id")
-	user := c.Cookies("test")
+	var news model.NewsSchema // Tek bir haber için struct
+	var views model.ViewsNews // Görüntüleme kaydı struct
+	id := c.Params("id")      // URL'den gelen haber ID'si
+	user := c.Cookies("test") // Çerezden gelen kullanıcı bilgisi
 
-	// Convert user from string to int
 	userID, err := strconv.Atoi(user)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid user ID",
 		})
 	}
+
+	// Haber ID'sini string'ten int'e dönüştürme
 	ID, err := strconv.Atoi(id)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid user ID",
+			"error": "Invalid news ID",
 		})
 	}
 
-	// Query the news based on the user ID (assuming user_id is a foreign key in news_schemas)
-	result := config.DB.Where("user_id = ?", userID).Find(&news)
-
-	// If no news is found, return an error
-	if result.Error != nil || result.RowsAffected == 0 {
+	// Haber var mı kontrol et
+	result := config.DB.Where("id = ?", ID).First(&news)
+	if result.Error != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"error": "No news found for the user",
+			"error": "News not found",
 		})
 	}
 
-	views.ID = ID
-	views.UserID = user
-	config.DB.Create(&views)
+	// Görüntüleme kaydının zaten olup olmadığını kontrol et
+	var existingView model.ViewsNews
+	viewCheck := config.DB.Where("id = ? AND user_id = ?", ID, userID).First(&existingView)
+	if viewCheck.Error == nil { // Eğer kayıt varsa
+		return c.Status(200).JSON(fiber.Map{
+			"message": "View already recorded",
+		})
+	}
 
-	// Return the news and the user in the response
+	views.UserID = userID // Kullanıcı kimliği
+	views.ID = ID         // Hangi habere ait olduğunu belirt
+
+	if err := config.DB.Create(&views).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to create view",
+		})
+	}
+
 	return c.Status(200).JSON(fiber.Map{
 		"news": news,
 		"user": userID,
