@@ -11,7 +11,7 @@ import (
 )
 
 func CreateNews(c *fiber.Ctx) error {
-	filePath, err := utils.SaveFile(c, "image", "./uploads")
+	filePath, err := utils.SaveFile(c, "image", "./uploads/news")
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot upload image"})
 	}

@@ -3,6 +3,7 @@ package routers
 import (
 	"tm/controllers/admin"
 	"tm/controllers/home"
+	"tm/controllers/media"
 	"tm/controllers/news"
 	"tm/middleware"
 	"tm/utils"
@@ -23,7 +24,10 @@ func InitRouters(app *fiber.App) {
 
 	newsP := app.Group("/api/news")
 	newsP.Get("/", news.GetAllNews)
-	newsP.Get("/:id", middleware.FakeUser, news.ViewsAll)
+	newsP.Get("/:id", middleware.FakeUser, news.NewsDetail)
+
+	mediaP := app.Group("api/media")
+	mediaP.Get("/", media.GetAllMedia)
 
 	adminR := app.Group("/api/admin")
 	adminR.Post("/banner", admin.CreateBanner)

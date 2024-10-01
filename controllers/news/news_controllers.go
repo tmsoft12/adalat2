@@ -3,7 +3,7 @@ package news
 import (
 	"fmt"
 	"os"
-	"strconv" // Import this package to convert string to int
+	"strconv"
 	config "tm/db"
 	model "tm/models"
 
@@ -34,10 +34,10 @@ func GetAllNews(c *fiber.Ctx) error {
 	return c.JSON(news)
 }
 
-func ViewsAll(c *fiber.Ctx) error {
+func NewsDetail(c *fiber.Ctx) error {
 	var news model.NewsSchema
-	id := c.Params("id")      // URL'den gelen haber ID'si
-	user := c.Cookies("test") // Çerezden gelen kullanıcı bilgisi
+	id := c.Params("id")
+	user := c.Cookies("test")
 
 	userID, err := strconv.Atoi(user)
 	if err != nil {
@@ -53,7 +53,6 @@ func ViewsAll(c *fiber.Ctx) error {
 		})
 	}
 
-	// Haber verisini almak için sorgu
 	result := config.DB.Where("id = ?", NewsID).First(&news)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
@@ -61,7 +60,6 @@ func ViewsAll(c *fiber.Ctx) error {
 				"error": fmt.Sprintf("No news found with ID %d", NewsID),
 			})
 		}
-		// Diğer hata durumları
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Error fetching news: " + result.Error.Error(),
 		})
@@ -70,17 +68,13 @@ func ViewsAll(c *fiber.Ctx) error {
 	var existingView model.Vi
 	viewCheck := config.DB.Where("news_id = ? AND user_id = ?", NewsID, userID).First(&existingView)
 	if viewCheck.Error == nil {
-		return c.Status(200).JSON(fiber.Map{
-			"news":    news,
-			"message": "View already recorded",
-		})
+		return getViewCount(c, NewsID, news)
 	} else if viewCheck.Error != gorm.ErrRecordNotFound {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Error checking view record: " + viewCheck.Error.Error(),
 		})
 	}
 
-	// Yeni görüntüleme kaydı oluştur
 	view := model.Vi{
 		UserID: userID,
 		NewsID: NewsID,
@@ -90,13 +84,33 @@ func ViewsAll(c *fiber.Ctx) error {
 			"error": "Failed to create view: " + err.Error(),
 		})
 	}
+	return getViewCount(c, NewsID, news)
+}
+
+func getViewCount(c *fiber.Ctx, NewsID int, news model.NewsSchema) error {
+	var viewCount int64
+	countResult := config.DB.Model(&model.Vi{}).
+		Where("news_id = ?", NewsID).
+		Count(&viewCount)
+
+	if countResult.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Error counting views: " + countResult.Error.Error(),
+		})
+	}
+
 	ip := os.Getenv("HOST")
 	port := os.Getenv("PORT")
 
 	news.Image = fmt.Sprintf("http://%s%s/%s", ip, port, news.Image)
 
+	if err := config.DB.Model(&news).Where("id = ?", NewsID).Update("count", int(viewCount)).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Error updating view count: " + err.Error(),
+		})
+	}
+
 	return c.Status(200).JSON(fiber.Map{
 		"news": news,
-		"user": userID,
 	})
 }

@@ -5,6 +5,7 @@ import (
 	"os"
 	config "tm/db"
 	model "tm/models"
+	"tm/utils"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -36,24 +37,21 @@ func Home_Page(c *fiber.Ctx) error {
 	port := os.Getenv("PORT")
 
 	// Process media URLs
-	for i := range media {
-		media[i].Video = fmt.Sprintf("http://%s%s/%s", ip, port, media[i].Video)
-	}
+	// for i := range media {
+	// 	media[i].Video = fmt.Sprintf("http://%s%s/%s", ip, port, media[i].Video)
+	// }
 
 	for i := range banner {
 		banner[i].Image = fmt.Sprintf("http://%s%s/%s", ip, port, banner[i].Image)
 	}
-
+	utils.UrlCom(media)
 	for i := range news {
 		news[i].Image = fmt.Sprintf("http://%s%s/%s", ip, port, news[i].Image)
-		// Apply language-specific logic
 		switch lang {
 		case "en":
-			// Only return English title and description
 			news[i].Title = news[i].EN_title
 			news[i].Description = news[i].EN_description
 		case "ru":
-			// Only return Russian title and description
 			news[i].Title = news[i].RU_title
 			news[i].Description = news[i].RU_description
 		default:

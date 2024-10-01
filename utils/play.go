@@ -11,7 +11,6 @@ func Play(c *fiber.Ctx) error {
 	fileName := c.Params("filename")
 	filePath := filepath.Join("./uploads/media", fileName)
 
-	// Check if file exists
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "File not found"})
 	}
