@@ -22,7 +22,7 @@ func CreateNews(c *fiber.Ctx) error {
 	}
 
 	news.Image = filePath
-	news.ID = int(time.Now().Unix()) // ID'yi int olarak ayarla
+	news.ID = int(time.Now().Unix())
 	news.Date = time.Now().Format("02.01.2006 15:04")
 
 	if err := config.DB.Create(news).Error; err != nil {
@@ -44,9 +44,7 @@ func CreateBanner(c *fiber.Ctx) error {
 	}
 
 	banners.Image = filePath
-	banners.ID = fmt.Sprintf("%d", time.Now().Unix())
-	banners.Title = c.FormValue("title")
-	banners.Description = c.FormValue("description")
+	banners.ID = int(time.Now().Unix())
 	banners.Link = c.FormValue("link")
 
 	if err := config.DB.Create(banners).Error; err != nil {
@@ -68,7 +66,7 @@ func CreateEmployer(c *fiber.Ctx) error {
 	}
 
 	employer.Image = filePath
-	employer.ID = fmt.Sprintf("%d", time.Now().Unix())
+	employer.ID = int(time.Now().Unix())
 
 	// Employer veritabanına kaydetme
 	if err := config.DB.Create(employer).Error; err != nil {
@@ -93,7 +91,7 @@ func CreateMedia(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Title is required"})
 	}
 	media.Video = filePath
-	media.ID = fmt.Sprintf("%d", time.Now().Unix())
+	media.ID = int(time.Now().Unix())
 	media.Date = time.Now().Format("2006-01-02")
 
 	if err := config.DB.Create(media).Error; err != nil {
