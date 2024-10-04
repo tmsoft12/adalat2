@@ -2,6 +2,7 @@ package admin
 
 import (
 	"fmt"
+	"os/exec"
 	"time"
 	config "tm/db"
 	model "tm/models"
@@ -9,6 +10,11 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 )
+
+func ExtractThumbnail(videoPath, coverPath string) error {
+	cmd := exec.Command("ffmpeg", "-i", videoPath, "-ss", "00:00:03", "-vframes", "1", coverPath)
+	return cmd.Run()
+}
 
 func CreateNews(c *fiber.Ctx) error {
 	filePath, err := utils.SaveFile(c, "image", "./uploads/news")
@@ -83,6 +89,7 @@ func CreateMedia(c *fiber.Ctx) error {
 	}
 
 	media := new(model.MediaSchema)
+
 	if err := c.BodyParser(media); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse request"})
 	}

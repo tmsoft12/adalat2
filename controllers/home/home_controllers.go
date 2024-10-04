@@ -36,17 +36,12 @@ func Home_Page(c *fiber.Ctx) error {
 	ip := os.Getenv("HOST")
 	port := os.Getenv("PORT")
 
-	// Process media URLs
-	// for i := range media {
-	// 	media[i].Video = fmt.Sprintf("http://%s%s/%s", ip, port, media[i].Video)
-	// }
-
 	for i := range banner {
-		banner[i].Image = fmt.Sprintf("http://%s%s/%s", ip, port, banner[i].Image)
+		banner[i].Image = fmt.Sprintf("http://%s%s/api/home/%s", ip, port, banner[i].Image)
 	}
 	utils.UrlCom(media)
 	for i := range news {
-		news[i].Image = fmt.Sprintf("http://%s%s/%s", ip, port, news[i].Image)
+		news[i].Image = fmt.Sprintf("http://%s%s/api/home/%s", ip, port, news[i].Image)
 		switch lang {
 		case "en":
 			news[i].Title = news[i].EN_title
@@ -62,7 +57,7 @@ func Home_Page(c *fiber.Ctx) error {
 		employ[i].Image = fmt.Sprintf("http://%s%s/%s", ip, port, employ[i].Image)
 	}
 
-	return c.JSON(fiber.Map{
+	return c.Status(200).JSON(fiber.Map{
 		"news":   news,
 		"banner": banner,
 		"media":  media,

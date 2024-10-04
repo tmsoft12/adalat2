@@ -2,6 +2,7 @@ package config
 
 import (
 	"log"
+	models_user "tm/controllers/admin/login/models"
 	model "tm/models"
 
 	"gorm.io/driver/sqlite"
@@ -16,6 +17,6 @@ func ConnectDatabase() {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
-	database.AutoMigrate(&model.BannerSchema{}, &model.EmployerSchema{}, &model.MediaSchema{}, &model.NewsSchema{}, &model.Vi{})
+	database.AutoMigrate(&model.BannerSchema{}, &model.EmployerSchema{}, &model.MediaSchema{}, &model.NewsSchema{}, &model.Vi{}, models_user.User{})
 	DB = database
 }
