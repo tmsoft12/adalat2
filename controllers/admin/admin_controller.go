@@ -87,7 +87,7 @@ func CreateMedia(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse request"})
 	}
 
-	if media.Title == "" {
+	if media.TM_title == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Title is required"})
 	}
 	media.Video = filePath

@@ -44,11 +44,11 @@ func Home_Page(c *fiber.Ctx) error {
 		news[i].Image = fmt.Sprintf("http://%s%s/api/home/%s", ip, port, news[i].Image)
 		switch lang {
 		case "en":
-			news[i].Title = news[i].EN_title
-			news[i].Description = news[i].EN_description
+			news[i].TM_title = news[i].EN_title
+			news[i].TM_description = news[i].EN_description
 		case "ru":
-			news[i].Title = news[i].RU_title
-			news[i].Description = news[i].RU_description
+			news[i].TM_title = news[i].RU_title
+			news[i].TM_description = news[i].RU_description
 		default:
 		}
 	}

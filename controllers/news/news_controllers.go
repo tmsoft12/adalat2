@@ -23,11 +23,11 @@ func GetAllNews(c *fiber.Ctx) error {
 		news[i].Image = fmt.Sprintf("http://%s%s/%s", ip, port, news[i].Image)
 		switch lang {
 		case "en":
-			news[i].Title = news[i].EN_title
-			news[i].Description = news[i].EN_description
+			news[i].TM_title = news[i].EN_title
+			news[i].TM_description = news[i].EN_description
 		case "ru":
-			news[i].Title = news[i].RU_title
-			news[i].Description = news[i].RU_description
+			news[i].TM_title = news[i].RU_title
+			news[i].TM_description = news[i].RU_description
 		default:
 		}
 	}
@@ -65,7 +65,7 @@ func NewsDetail(c *fiber.Ctx) error {
 		})
 	}
 
-	var existingView model.Vi
+	var existingView model.Views
 	viewCheck := config.DB.Where("news_id = ? AND user_id = ?", NewsID, userID).First(&existingView)
 	if viewCheck.Error == nil {
 		return getViewCount(c, NewsID, news)
@@ -75,7 +75,7 @@ func NewsDetail(c *fiber.Ctx) error {
 		})
 	}
 
-	view := model.Vi{
+	view := model.Views{
 		UserID: userID,
 		NewsID: NewsID,
 	}
@@ -89,7 +89,7 @@ func NewsDetail(c *fiber.Ctx) error {
 
 func getViewCount(c *fiber.Ctx, NewsID int, news model.NewsSchema) error {
 	var viewCount int64
-	countResult := config.DB.Model(&model.Vi{}).
+	countResult := config.DB.Model(&model.Views{}).
 		Where("news_id = ?", NewsID).
 		Count(&viewCount)
 

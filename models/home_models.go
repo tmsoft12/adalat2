@@ -1,6 +1,6 @@
 package model
 
-type Vi struct {
+type Views struct {
 	ID     int `json:"id" gorm:"primaryKey;autoIncrement"`
 	UserID int `json:"user_id"`
 	NewsID int `json:"news_id"`
@@ -9,22 +9,22 @@ type Vi struct {
 type NewsSchema struct {
 	ID             int    `json:"id" gorm:"primaryKey"`
 	Image          string `json:"image"`
-	Description    string `json:"description"`
-	Title          string `json:"title"`
+	TM_description string `json:"tm_description"`
+	TM_title       string `json:"tm_title"`
+	EN_title       string `json:"en_title"`
+	RU_title       string `json:"ru_title"`
+	EN_description string `json:"en_description"`
+	RU_description string `json:"ru_description"`
+	View           int    `json:"view"`
 	Date           string `json:"date"`
-	EN_title       string `json:"entitle"`
-	RU_title       string `json:"rutitle"`
-	EN_description string `json:"endescription"`
-	RU_description string `json:"rudescription"`
-	Count          int    `json:"count"`
 }
 
 type MediaSchema struct {
 	ID       int    `json:"id" gorm:"primaryKey;autoIncrement"`
 	Video    string `json:"video"`
-	Title    string `json:"title"`
-	EN_title string `json:"entitle"`
-	RU_title string `json:"rutitle"`
+	TM_title string `json:"tm_title"`
+	EN_title string `json:"en_title"`
+	RU_title string `json:"ru_title"`
 	Date     string `json:"date"`
 }
 
