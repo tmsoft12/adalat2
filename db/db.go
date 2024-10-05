@@ -2,6 +2,7 @@ package config
 
 import (
 	"log"
+	"tm/controllers/admin/banner/models"
 	models_user "tm/controllers/admin/login/models"
 	model "tm/models"
 
@@ -17,6 +18,6 @@ func ConnectDatabase() {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
-	database.AutoMigrate(&model.BannerSchema{}, &model.EmployerSchema{}, &model.MediaSchema{}, &model.NewsSchema{}, &model.Views{}, models_user.User{})
+	database.AutoMigrate(&models.BannerSchema{}, &model.EmployerSchema{}, &model.MediaSchema{}, &model.NewsSchema{}, &model.Views{}, models_user.User{})
 	DB = database
 }

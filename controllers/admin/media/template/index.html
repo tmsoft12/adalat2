@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medya Yükleme</title>
+</head>
+<body>
+    <h1>Medya Yükleme Formu</h1>
+    <form id="mediaForm">
+        <label for="title">Başlık:</label>
+        <input type="text" id="title" name="TM_title" required>
+        <br><br>
+        <label for="video">Video Yükle:</label>
+        <input type="file" id="video" name="video" accept="video/*" required>
+        <br><br>
+        <button type="submit">Yükle</button>
+    </form>
+
+    <div id="response"></div>
+
+    <script>
+        document.getElementById('mediaForm').addEventListener('submit', async function (event) {
+            event.preventDefault(); // Formun otomatik olarak gönderilmesini engelle
+
+            const formData = new FormData();
+            const title = document.getElementById('title').value;
+            const video = document.getElementById('video').files[0];
+
+            formData.append('TM_title', title);
+            formData.append('video', video);
+
+            try {
+                const response = await fetch('http://192.168.0.103:5000/api/media/create', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('response').innerHTML = `<p>Başarılı: ${JSON.stringify(result)}</p>`;
+                } else {
+                    document.getElementById('response').innerHTML = `<p>Hata: ${result.error}</p>`;
+                }
+            } catch (error) {
+                document.getElementById('response').innerHTML = `<p>Bir hata oluştu: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
