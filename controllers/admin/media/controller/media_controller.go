@@ -127,3 +127,98 @@ func GetById(c *fiber.Ctx) error {
 	return c.Status(200).JSON(media)
 
 }
+func DeleteMedia(c *fiber.Ctx) error {
+	idParam := c.Params("id")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid ID format",
+		})
+	}
+
+	var media media_model.MediaSchema
+
+	if err := config.DB.First(&media, id).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "Media not found",
+		})
+	}
+
+	if media.Video != "" {
+		// Dosyanın mevcut olup olmadığını kontrol et
+		if _, err := os.Stat(media.Video); os.IsNotExist(err) {
+			return c.Status(404).JSON(fiber.Map{"error": "File not found"})
+		}
+
+		fmt.Println("Attempting to delete file:", media.Video) // Silinmeye çalışılan dosya yolu
+		if err := os.Remove(media.Video); err != nil {
+			fmt.Println("Error deleting file:", err) // Hata detayını logla
+			return c.Status(500).JSON(fiber.Map{"error": "Failed to delete the media file"})
+		}
+	}
+
+	if err := config.DB.Delete(&media).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to delete media from database",
+		})
+	}
+
+	return c.Status(fiber.StatusNoContent).JSON(fiber.Map{
+		"message": "Media deleted successfully",
+	})
+}
+func UpdateMedia(c *fiber.Ctx) error {
+	idParam := c.Params("id")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid ID format",
+		})
+	}
+
+	// Eski medyayı veritabanından getir
+	var media media_model.MediaSchema
+	if err := config.DB.First(&media, id).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "Media not found",
+		})
+	}
+
+	// Yeni dosya yüklendiyse eski dosyayı sil ve yeni dosyayı yükle
+	if newFilePath, err := handleFileUpload(c); err == nil {
+		// Eski dosyayı sil
+		if media.Video != "" {
+			if _, err := os.Stat(media.Video); err == nil {
+				fmt.Println("Deleting old file:", media.Video)
+				if err := os.Remove(media.Video); err != nil {
+					fmt.Println("Error deleting old file:", err)
+				}
+			}
+		}
+		// Yeni dosya yolunu güncelle
+		media.Video = newFilePath
+	}
+
+	// Diğer alanları güncelle
+	if err := c.BodyParser(&media); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Failed to parse request",
+		})
+	}
+
+	if err := config.DB.Save(&media).Error; err != nil {
+		fmt.Println("Error while updating media:", err) // Hata mesajı loglanıyor
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to update media",
+		})
+	}
+
+	// URL'yi tekrar oluştur
+	ip := os.Getenv("HOST")
+	port := os.Getenv("PORT")
+	home := os.Getenv("HOME_URL")
+	media.Video = fmt.Sprintf("http://%s%s/%s/%s", ip, port, home, media.Video)
+
+	return c.Status(fiber.StatusOK).JSON(media)
+
+}

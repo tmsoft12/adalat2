@@ -35,6 +35,8 @@ func InitRouters(app *fiber.App) {
 	mediaP.Get("/all", media_controller.GetAllMedia)
 	mediaP.Get("/byId/:id", media_controller.GetById)
 	mediaP.Post("/create", media_controller.CreateMedia)
+	mediaP.Delete("/delete/:id", media_controller.DeleteMedia)
+	mediaP.Put("/:id", media_controller.UpdateMedia)
 
 	newsP := app.Group("/api/news")
 	newsP.Get("/", news.GetAllNews)
