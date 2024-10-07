@@ -33,10 +33,9 @@ func GetAllMedia(c *fiber.Ctx) error {
 	}
 	ip := os.Getenv("HOST")
 	port := os.Getenv("PORT")
-	home := os.Getenv("HOME_URL")
 
 	for i := range media {
-		media[i].Video = fmt.Sprintf("http://%s%s/%s/%s", ip, port, home, media[i].Video)
+		media[i].Video = fmt.Sprintf("http://%s%s/%s", ip, port, media[i].Video)
 	}
 
 	return c.Status(200).JSON(fiber.Map{
@@ -120,9 +119,8 @@ func GetById(c *fiber.Ctx) error {
 	}
 	ip := os.Getenv("HOST")
 	port := os.Getenv("PORT")
-	home := os.Getenv("HOME_URL")
 
-	media.Video = fmt.Sprintf("http://%s%s/%s/%s", ip, port, home, media.Video)
+	media.Video = fmt.Sprintf("http://%s%s/%s", ip, port, media.Video)
 
 	return c.Status(200).JSON(media)
 
@@ -186,7 +184,6 @@ func UpdateMedia(c *fiber.Ctx) error {
 
 	// Yeni dosya yüklendiyse eski dosyayı sil ve yeni dosyayı yükle
 	if newFilePath, err := handleFileUpload(c); err == nil {
-		// Eski dosyayı sil
 		if media.Video != "" {
 			if _, err := os.Stat(media.Video); err == nil {
 				fmt.Println("Deleting old file:", media.Video)
@@ -213,11 +210,9 @@ func UpdateMedia(c *fiber.Ctx) error {
 		})
 	}
 
-	// URL'yi tekrar oluştur
 	ip := os.Getenv("HOST")
 	port := os.Getenv("PORT")
-	home := os.Getenv("HOME_URL")
-	media.Video = fmt.Sprintf("http://%s%s/%s/%s", ip, port, home, media.Video)
+	media.Video = fmt.Sprintf("http://%s%s/%s", ip, port, media.Video)
 
 	return c.Status(fiber.StatusOK).JSON(media)
 

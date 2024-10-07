@@ -37,11 +37,11 @@ func Home_Page(c *fiber.Ctx) error {
 	port := os.Getenv("PORT")
 
 	for i := range banner {
-		banner[i].Image = fmt.Sprintf("http://%s%s/api/home/%s", ip, port, banner[i].Image)
+		banner[i].Image = fmt.Sprintf("http://%s%s/%s", ip, port, banner[i].Image)
 	}
 	utils.UrlCom(media)
 	for i := range news {
-		news[i].Image = fmt.Sprintf("http://%s%s/api/home/%s", ip, port, news[i].Image)
+		news[i].Image = fmt.Sprintf("http://%s%s/%s", ip, port, news[i].Image)
 		switch lang {
 		case "en":
 			news[i].TM_title = news[i].EN_title

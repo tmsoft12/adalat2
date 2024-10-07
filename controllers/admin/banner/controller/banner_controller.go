@@ -23,7 +23,7 @@ func GetAllBanner(c *fiber.Ctx) error {
 	port := os.Getenv("PORT")
 
 	for i := range banners {
-		banners[i].Image = fmt.Sprintf("http://%s%s/api/home/%s", ip, port, banners[i].Image)
+		banners[i].Image = fmt.Sprintf("http://%s%s/%s", ip, port, banners[i].Image)
 	}
 
 	return c.Status(200).JSON(banners)
@@ -47,7 +47,7 @@ func GetBannerById(c *fiber.Ctx) error {
 
 	ip := os.Getenv("HOST")
 	port := os.Getenv("PORT")
-	banner.Image = fmt.Sprintf("http://%s%s/api/home/%s", ip, port, banner.Image)
+	banner.Image = fmt.Sprintf("http://%s%s/%s", ip, port, banner.Image)
 
 	return c.Status(200).JSON(banner)
 }

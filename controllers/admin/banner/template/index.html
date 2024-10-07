@@ -54,11 +54,11 @@
 </form>
 
 <script>
-    const apiUrl = "http://192.168.73.15:5000/api/banner";
+    const apiUrl = "http://192.168.0.107:5000/api/banner";
 
     // Function to fetch and display all banners
     async function fetchBanners() {
-        const response = await fetch(`${apiUrl}/all`);
+        const response = await fetch(`${apiUrl}/`);
         if (response.ok) {
             const banners = await response.json();
             const bannersDiv = document.getElementById("banners");
@@ -87,7 +87,7 @@
         const formData = new FormData(event.target);
         formData.append("is_active", document.getElementById("is_active").checked ? "true" : "false");
 
-        const response = await fetch(`${apiUrl}/create`, {
+        const response = await fetch(`${apiUrl}/`, {
             method: "POST",
             body: formData
         });
@@ -120,7 +120,7 @@ document.getElementById("updateBannerForm").addEventListener("submit", async (ev
     const formData = new FormData(event.target);
     formData.append("is_active", document.getElementById("updateIsActive").checked ? "true" : "false");
 
-    const response = await fetch(`${apiUrl}/update/${id}`, {
+    const response = await fetch(`${apiUrl}/${id}`, {
         method: "PUT",
         body: formData
     });
@@ -145,7 +145,7 @@ document.getElementById("updateBannerForm").addEventListener("submit", async (ev
 
 // Function to delete a banner
 async function deleteBanner(id) {
-    const response = await fetch(`${apiUrl}/delete/${id}`, {
+    const response = await fetch(`${apiUrl}/${id}`, {
         method: "DELETE",
     });
 
@@ -169,7 +169,7 @@ async function deleteBanner(id) {
 
     // Function to delete a banner
     async function deleteBanner(id) {
-        const response = await fetch(`${apiUrl}/delete/${id}`, {
+        const response = await fetch(`${apiUrl}/${id}`, {
             method: "DELETE",
         });
 
@@ -183,7 +183,7 @@ async function deleteBanner(id) {
     }
 
     // Fetch banners on page load
-    window.onload = fetchBanners;
+    // window.onload = fetchBanners;s
 </script>
 
 </body>

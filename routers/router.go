@@ -4,8 +4,8 @@ import (
 	"tm/controllers/admin"
 	"tm/controllers/admin/banner/controller"
 	media_controller "tm/controllers/admin/media/controller"
+	news_controller "tm/controllers/admin/news/controller"
 	"tm/controllers/home"
-	"tm/controllers/news"
 	"tm/middleware"
 	admin_middleware "tm/middleware/admin"
 	"tm/utils"
@@ -19,28 +19,37 @@ func InitRouters(app *fiber.App) {
 		AllowOrigins: "*",
 		AllowHeaders: "Origin, Content-Type, Accept",
 	}))
+	uploads := app.Group("/")
+	uploads.Get("/uploads/media/:filename", utils.Play)
+	uploads.Static("/uploads", "./uploads")
+
 	homeP := app.Group("api/home")
 	homeP.Get("/", middleware.FakeUser, home.Home_Page)
-	homeP.Get("/uploads/media/:filename", utils.Play)
-	homeP.Static("/uploads", "./uploads")
 
 	banner := app.Group("/api/banner")
-	banner.Get("/all", controller.GetAllBanner)
-	banner.Get("/by/:id", controller.GetBannerById)
-	banner.Post("/create", controller.CreateBanner)
-	banner.Delete("/delete/:id", controller.DeleteBanner)
-	banner.Put("/update/:id", controller.UpdateBanner)
+	banner.Get("/", controller.GetAllBanner)
+	banner.Get("/:id", controller.GetBannerById)
+	banner.Post("/", controller.CreateBanner)
+	banner.Delete("/:id", controller.DeleteBanner)
+	banner.Put("/:id", controller.UpdateBanner)
 
 	mediaP := app.Group("/api/media")
-	mediaP.Get("/all", media_controller.GetAllMedia)
-	mediaP.Get("/byId/:id", media_controller.GetById)
-	mediaP.Post("/create", media_controller.CreateMedia)
-	mediaP.Delete("/delete/:id", media_controller.DeleteMedia)
+	mediaP.Get("/", media_controller.GetAllMedia)
+	mediaP.Get("/:id", media_controller.GetById)
+	mediaP.Post("/", media_controller.CreateMedia)
+	mediaP.Delete("/:id", media_controller.DeleteMedia)
 	mediaP.Put("/:id", media_controller.UpdateMedia)
 
-	newsP := app.Group("/api/news")
-	newsP.Get("/", news.GetAllNews)
-	newsP.Get("/:id", middleware.FakeUser, news.NewsDetail)
+	news := app.Group("api/news")
+	news.Get("/", news_controller.GetAllNews)
+	news.Get("/:id", news_controller.GetByIdNews)
+	news.Post("/", news_controller.CreateNews)
+	news.Delete("/:id", news_controller.DeleteNew)
+	news.Put("/:id", news_controller.UpdateNews)
+
+	// newsP := app.Group("/api/news")
+	// newsP.Get("/", news.GetAllNews)
+	// newsP.Get("/:id", middleware.FakeUser, news.NewsDetail)
 
 	adminR := app.Group("/api/admin", admin_middleware.Protected)
 	adminR.Post("/banner", admin.CreateBanner)
