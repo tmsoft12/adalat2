@@ -37,6 +37,9 @@ func GetAllMedia(c *fiber.Ctx) error {
 	for i := range media {
 		media[i].Video = fmt.Sprintf("http://%s%s/%s", ip, port, media[i].Video)
 	}
+	for i := range media {
+		media[i].Cover = fmt.Sprintf("http://%s%s/%s", ip, port, media[i].Cover)
+	}
 
 	return c.Status(200).JSON(fiber.Map{
 		"total":    total,

@@ -1,4 +1,4 @@
-package news
+package news_page
 
 import (
 	"fmt"
@@ -104,7 +104,7 @@ func getViewCount(c *fiber.Ctx, NewsID int, news model.NewsSchema) error {
 
 	news.Image = fmt.Sprintf("http://%s%s/%s", ip, port, news.Image)
 
-	if err := config.DB.Model(&news).Where("id = ?", NewsID).Update("count", int(viewCount)).Error; err != nil {
+	if err := config.DB.Model(&news).Where("id = ?", NewsID).Update("view", int(viewCount)).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Error updating view count: " + err.Error(),
 		})

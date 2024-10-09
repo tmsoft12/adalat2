@@ -3,9 +3,12 @@ package routers
 import (
 	"tm/controllers/admin"
 	"tm/controllers/admin/banner/controller"
+	employer_contrllers "tm/controllers/admin/employers/controllers"
 	media_controller "tm/controllers/admin/media/controller"
 	news_controller "tm/controllers/admin/news/controller"
 	"tm/controllers/home"
+	"tm/controllers/media"
+	news_page "tm/controllers/news"
 	"tm/middleware"
 	admin_middleware "tm/middleware/admin"
 	"tm/utils"
@@ -47,14 +50,24 @@ func InitRouters(app *fiber.App) {
 	news.Delete("/:id", news_controller.DeleteNew)
 	news.Put("/:id", news_controller.UpdateNews)
 
-	// newsP := app.Group("/api/news")
-	// newsP.Get("/", news.GetAllNews)
-	// newsP.Get("/:id", middleware.FakeUser, news.NewsDetail)
+	employerP := app.Group("/api/employer")
+	employerP.Get("/", employer_contrllers.GetAllEmployers)
+	employerP.Post("/", employer_contrllers.CreateEmployer)
+	employerP.Delete("/:id", employer_contrllers.DeleteEmployer)
+	employerP.Put("/:id", employer_contrllers.UpdateEmployer)
+	employerP.Get("/:id", employer_contrllers.GetByIdEmployer)
+
+	newsP := app.Group("/api/home")
+	newsP.Get("/", home.Home_Page)
+	newsP.Get("/", news_page.GetAllNews)
 
 	adminR := app.Group("/api/admin", admin_middleware.Protected)
 	adminR.Post("/banner", admin.CreateBanner)
 	adminR.Post("/employer", admin.CreateEmployer)
 	adminR.Post("/news", admin.CreateNews)
 	adminR.Post("/media", admin.CreateMedia)
+
+	app.Get("/:id", middleware.FakeUser, media.MediaDetail)
+	app.Get("/:id", middleware.FakeUser, news_page.NewsDetail)
 
 }

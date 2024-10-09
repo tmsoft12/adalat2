@@ -83,7 +83,7 @@
     </table>
 
     <script>
-        const apiBaseUrl = 'http://192.168.0.103:5000/api/media';
+        const apiBaseUrl = 'http://192.168.100.242:5000/api/media';
 
         // Load all media on page load
         window.onload = function () {
@@ -92,7 +92,7 @@
 
         // Function to load all media
         function loadAllMedia() {
-            fetch(`${apiBaseUrl}/all`)
+            fetch(`${apiBaseUrl}/`)
                 .then(response => response.json())
                 .then(data => {
                     const mediaTableBody = document.getElementById('mediaTable').querySelector('tbody');
@@ -127,7 +127,7 @@
             formData.append('ru_title', document.getElementById('ru_title').value);
             formData.append('video', document.getElementById('video').files[0]);
 
-            fetch(`${apiBaseUrl}/create`, {
+            fetch(`${apiBaseUrl}`, {
                 method: 'POST',
                 body: formData
             })
@@ -149,7 +149,7 @@
                 return;
             }
 
-            fetch(`${apiBaseUrl}/delete/${id}`, {
+            fetch(`${apiBaseUrl}${id}`, {
                 method: 'DELETE'
             })
             .then(() => {

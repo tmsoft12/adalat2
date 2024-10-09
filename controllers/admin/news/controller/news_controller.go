@@ -39,7 +39,7 @@ func GetAllNews(c *fiber.Ctx) error {
 		"total":    total,
 		"page":     page,
 		"pageSize": pageSize,
-		"media":    news,
+		"news":     news,
 	})
 }
 func GetByIdNews(c *fiber.Ctx) error {
@@ -53,7 +53,7 @@ func GetByIdNews(c *fiber.Ctx) error {
 	var new news_model.NewsSchema
 	if err := config.DB.First(&new, id).Error; err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"error": "Banner not found",
+			"error": "News not found",
 		})
 	}
 	ip := os.Getenv("HOST")
@@ -175,7 +175,7 @@ func DeleteNew(c *fiber.Ctx) error {
 
 	if new.Image != "" {
 		if _, err := os.Stat(new.Image); os.IsNotExist(err) {
-			return c.Status(404).JSON(fiber.Map{"error": "File not found"})
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "File not found"})
 		}
 
 		fmt.Println("Attempting to delete file:", new.Image)

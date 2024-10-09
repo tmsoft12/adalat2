@@ -54,11 +54,10 @@
 </form>
 
 <script>
-    const apiUrl = "http://192.168.0.107:5000/api/banner";
+    const apiUrl = "http://192.168.100.242:5000/api/banner";
 
-    // Function to fetch and display all banners
     async function fetchBanners() {
-        const response = await fetch(`${apiUrl}/`);
+        const response = await fetch(`${apiUrl}`);
         if (response.ok) {
             const banners = await response.json();
             const bannersDiv = document.getElementById("banners");
@@ -87,7 +86,7 @@
         const formData = new FormData(event.target);
         formData.append("is_active", document.getElementById("is_active").checked ? "true" : "false");
 
-        const response = await fetch(`${apiUrl}/`, {
+        const response = await fetch(`${apiUrl}`, {
             method: "POST",
             body: formData
         });
@@ -182,8 +181,7 @@ async function deleteBanner(id) {
         }
     }
 
-    // Fetch banners on page load
-    // window.onload = fetchBanners;s
+    window.onload = fetchBanners;
 </script>
 
 </body>
