@@ -1,301 +1,179 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>News and Banners List</title>
+    <title>Medya Güncelleme</title>
     <style>
-        /* Genel stil */
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
             background-color: #f4f4f4;
         }
-
-        h1, h2 {
-            color: #333;
+        h1 {
+            text-align: center;
         }
-
-        /* Carousel stili */
-        .carousel {
-            position: relative;
-            width: 100%;
-            margin: 0 auto 20px auto;
-            overflow: hidden;
-            border-radius: 8px;
-        }
-
-        .carousel-inner {
-            display: flex;
-            transition: transform 0.5s ease-in-out;
-        }
-
-        .carousel-item {
-            min-width: 100%;
-            box-sizing: border-box;
-        }
-
-        .carousel img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        /* Carousel okları */
-        .carousel-prev, .carousel-next {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background-color: rgba(0, 0, 0, 0.5);
-            color: white;
-            border: none;
-            padding: 10px;
-            cursor: pointer;
-            font-size: 18px;
-            border-radius: 50%;
-        }
-
-        .carousel-prev {
-            left: 10px;
-        }
-
-        .carousel-next {
-            right: 10px;
-        }
-
-        /* Haber kartları stili */
-        .news-card, .media-card, .employer-card {
-            display: flex;
-            flex-direction: column;
-            background-color: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            margin: 10px;
-            flex-basis: 30%;
-            max-width: 30%;
-        }
-
-        .news-card img, .media-card img, .employer-card img {
-            width: 100%;
-            height: auto;
-        }
-
-        .news-card-content, .media-card-content, .employer-card-content {
-            padding: 10px;
-        }
-
-        .news-card-title, .media-card-title, .employer-card-name {
-            font-size: 16px;
-            font-weight: bold;
-        }
-
-        .news-card-date {
-            font-size: 12px;
-            color: #777;
-            margin-bottom: 10px;
-        }
-
-        .news-list, .media-list, .employer-list {
+        .media-list {
             display: flex;
             flex-wrap: wrap;
-            justify-content: space-between;
+            justify-content: center;
+            margin: 20px;
+        }
+        .media-item {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 10px;
+            padding: 15px;
+            width: 250px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .media-item:hover {
+            transform: scale(1.05);
+        }
+        .modal {
+            display: none; /* Modal başlangıçta gizli */
+            position: fixed;
+            z-index: 1; /* En üstte görünmesini sağla */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto; /* Gerekirse kaydır */
+            background-color: rgba(0, 0, 0, 0.4); /* Şeffaf arka plan */
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto; /* Üstten ve alttan boşluk */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Genişlik */
+            max-width: 500px; /* Maksimum genişlik */
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <h1>Latest News</h1>
+    <h1>Medya Güncelleme</h1>
+    <div class="media-list" id="media-list"></div>
 
-    <!-- Carousel for Banners -->
-    <div class="carousel">
-        <div class="carousel-inner" id="banner-carousel">
-            <!-- Banner images will be injected here -->
+    <!-- Modal için HTML -->
+    <div id="update-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="close-modal">&times;</span>
+            <h2>Medya Güncelle</h2>
+            <form id="form" enctype="multipart/form-data">
+                <input type="hidden" name="id" id="media-id" />
+                <div id="current-media" style="margin-bottom: 20px;"></div>
+                <label for="video">Yeni Video Dosyası:</label>
+                <input type="file" name="video" id="video" accept="video/*" />
+                <br><br>
+                <label for="cover">Yeni Kapak Dosyası:</label>
+                <input type="file" name="cover" id="cover" accept="image/*" />
+                <br><br>
+                <button type="submit">Güncelle</button>
+            </form>
         </div>
-        <button class="carousel-prev" onclick="prevSlide()">&#10094;</button>
-        <button class="carousel-next" onclick="nextSlide()">&#10095;</button>
     </div>
 
-    <!-- News cards -->
-    <section>
-        <h2>News</h2>
-        <div class="news-list" id="news-list"></div>
-    </section>
-
-    <!-- Media cards -->
-    <section>
-        <h2>Media</h2>
-        <div class="media-list" id="media-list"></div>
-    </section>
-
-    <!-- Employer cards -->
-    <section>
-        <h2>Employers</h2>
-        <div class="employer-list" id="employer-list"></div>
-    </section>
-
     <script>
-        const apiEndpoint = 'http://localhost:5000'; 
-        let currentSlide = 0;
+        const mediaListElement = document.getElementById('media-list');
+        const updateModal = document.getElementById('update-modal');
+        const mediaIdElement = document.getElementById('media-id');
+        const currentMediaElement = document.getElementById('current-media');
+        const closeModalButton = document.getElementById('close-modal');
 
-        async function fetchData() {
+        // Medya verilerini getir
+        async function fetchMedia() {
             try {
-                const response = await fetch(`${apiEndpoint}/`); 
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();  // JSON formatında veriyi alıyoruz
-                console.log("Data:", data);
-
-                // Haberleri göster
-                if (Array.isArray(data.news)) {
-                    const newsList = document.getElementById('news-list');
-                    data.news.forEach(news => {
-                        const newsCard = document.createElement('div');
-                        newsCard.classList.add('news-card');
-
-                        const newsImage = document.createElement('img');
-                        newsImage.src = `${news.image}`;
-                        newsImage.alt = news.title;
-
-                        const newsContent = document.createElement('div');
-                        newsContent.classList.add('news-card-content');
-
-                        const newsTitle = document.createElement('p');
-                        newsTitle.classList.add('news-card-title');
-                        newsTitle.textContent = news.title;
-
-                        const newsDate = document.createElement('p');
-                        newsDate.classList.add('news-card-date');
-                        newsDate.textContent = news.date;
-
-                        newsContent.appendChild(newsTitle);
-                        newsContent.appendChild(newsDate);
-                        newsCard.appendChild(newsImage);
-                        newsCard.appendChild(newsContent);
-
-                        newsList.appendChild(newsCard);
-                    });
-                } else {
-                    console.error("data.news is not an array:", data.news);
-                }
-
-                // Banner'ları göster
-                if (Array.isArray(data.banner)) {
-                    const bannerCarousel = document.getElementById('banner-carousel');
-                    data.banner.forEach(banner => {
-                        const bannerItem = document.createElement('div');
-                        bannerItem.classList.add('carousel-item');
-
-                        const bannerImage = document.createElement('img');
-                        bannerImage.src = `${banner.image}`;
-                        bannerImage.alt = banner.title;
-
-                        bannerItem.appendChild(bannerImage);
-                        bannerCarousel.appendChild(bannerItem);
-                    });
-
-                    // İlk slide'ı göster
-                    showSlide(0);
-                } else {
-                    console.error("data.banner is not an array:", data.banner);
-                }
-
-                // Medyaları göster
-                if (Array.isArray(data.media)) {
-                    const mediaList = document.getElementById('media-list');
-                    data.media.forEach(media => {
-                        const mediaCard = document.createElement('div');
-                        mediaCard.classList.add('media-card');
-
-                        // Video bileşeni
-                        const mediaVideo = document.createElement('video');
-                        mediaVideo.src = `${media.video}`;
-                        mediaVideo.controls = true; // Oynatma kontrolleri
-                        mediaVideo.width = 320; // Video genişliği
-                        mediaVideo.alt = media.title;
-
-                        const mediaContent = document.createElement('div');
-                        mediaContent.classList.add('media-card-content');
-
-                        const mediaTitle = document.createElement('p');
-                        mediaTitle.classList.add('media-card-title');
-                        mediaTitle.textContent = media.title;
-
-                        mediaContent.appendChild(mediaTitle);
-                        mediaCard.appendChild(mediaVideo);
-                        mediaCard.appendChild(mediaContent);
-
-                        mediaList.appendChild(mediaCard);
-                    });
-                } else {
-                    console.error("data.media is not an array:", data.media);
-                }
-
-                // Employer'ları göster
-                if (Array.isArray(data.employ)) {
-                    const employerList = document.getElementById('employer-list');
-                    data.employ.forEach(employer => {
-                        const employerCard = document.createElement('div');
-                        employerCard.classList.add('employer-card');
-
-                        const employerImage = document.createElement('img');
-                        employerImage.src = `${employer.image}`;
-                        employerImage.alt = employer.name;
-
-                        const employerContent = document.createElement('div');
-                        employerContent.classList.add('employer-card-content');
-
-                        const employerName = document.createElement('p');
-                        employerName.classList.add('employer-card-name');
-                        employerName.textContent = employer.name;
-
-                        const employerMajor = document.createElement('p');
-                        employerMajor.textContent = employer.major;
-
-                        employerContent.appendChild(employerName);
-                        employerContent.appendChild(employerMajor);
-                        employerCard.appendChild(employerImage);
-                        employerCard.appendChild(employerContent);
-
-                        employerList.appendChild(employerCard);
-                    });
-                } else {
-                    console.error("data.employ is not an array:", data.employ);
-                }
-
+                const response = await fetch('http://192.168.100.242:5000/api/admin/media');
+                if (!response.ok) throw new Error('Medya verileri alınamadı.');
+                const data = await response.json();
+                displayMedia(data.media);
             } catch (error) {
-                console.error('Error fetching data:', error);
+                console.error('Hata:', error);
             }
         }
 
-        function showSlide(index) {
-            const slides = document.querySelectorAll('.carousel-item');
-            if (index >= slides.length) {
-                currentSlide = 0;
-            } else if (index < 0) {
-                currentSlide = slides.length - 1;
-            } else {
-                currentSlide = index;
+        // Medya verilerini listele
+        function displayMedia(mediaItems) {
+            mediaListElement.innerHTML = '';
+            mediaItems.forEach(media => {
+                const mediaItemDiv = document.createElement('div');
+                mediaItemDiv.classList.add('media-item');
+                mediaItemDiv.innerHTML = `
+                    <strong>ID:</strong> ${media.id} <br>
+                    <strong>Video:</strong> <a href="${media.video}" target="_blank">Oynat</a> <br>
+                    <strong>Kapak:</strong> <img src="${media.cover}" alt="Kapak" style="width: 100px;" /> <br>
+                    <button onclick="prepareUpdate(${media.id}, '${media.video}', '${media.cover}')">Güncelle</button>
+                `;
+                mediaListElement.appendChild(mediaItemDiv);
+            });
+        }
+
+        // Güncelleme formunu hazırlamak için modal aç
+        function prepareUpdate(id, video, cover) {
+            mediaIdElement.value = id;
+            currentMediaElement.innerHTML = `
+                <strong>Mevcut Video:</strong> <a href="${video}" target="_blank">Oynat</a> <br>
+                <strong>Mevcut Kapak:</strong> <img src="${cover}" alt="Kapak" style="width: 100px;" /> <br>
+            `;
+            updateModal.style.display = 'block'; // Modal'ı göster
+        }
+
+        // Modalı kapat
+        closeModalButton.onclick = function() {
+            updateModal.style.display = 'none'; // Modal'ı gizle
+        }
+
+        // Form gönderimi
+        document.getElementById('form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            const id = formData.get('id');
+
+            try {
+                const response = await fetch(`http://192.168.100.242:5000/api/admin/media/${id}`, {
+                    method: 'PUT', // veya 'PATCH'
+                    body: formData
+                });
+
+                if (response.ok) {
+                    alert('Medya güncellendi!');
+                    fetchMedia(); // Listeyi güncelle
+                    updateModal.style.display = 'none'; // Modal'ı gizle
+                } else {
+                    const errorData = await response.json();
+                    alert('Hata: ' + errorData.error);
+                }
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Güncelleme sırasında hata oluştu.');
             }
+        });
 
-            const offset = -currentSlide * 100; // Yüzde bazında kaydırma
-            document.querySelector('.carousel-inner').style.transform = `translateX(${offset}%)`;
+        // Sayfa yüklendiğinde medya verilerini getir
+        window.onload = fetchMedia;
+
+        // Modal dışında bir yere tıklanırsa modalı kapat
+        window.onclick = function(event) {
+            if (event.target === updateModal) {
+                updateModal.style.display = 'none'; // Modal'ı gizle
+            }
         }
-
-        function nextSlide() {
-            showSlide(currentSlide + 1);
-        }
-
-        function prevSlide() {
-            showSlide(currentSlide - 1);
-        }
-
-        window.onload = () => {
-            fetchData(); // Haberleri ve banner'ları al
-        };
     </script>
 </body>
 </html>

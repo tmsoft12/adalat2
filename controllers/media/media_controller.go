@@ -15,87 +15,82 @@ import (
 func GetAllMedia(c *fiber.Ctx) error {
 	var media []model.MediaSchema
 	if err := config.DB.Find(&media).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Cannot fetch news"})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Cannot fetch media"})
 	}
 	utils.UrlCom(media)
 
-	return c.Status(200).JSON(media)
+	return c.Status(fiber.StatusOK).JSON(media)
 }
 
 func MediaDetail(c *fiber.Ctx) error {
 	var media model.MediaSchema
 	id := c.Params("id")
-	user := c.Cookies("test")
+	userCookie := c.Cookies("test")
 
-	userID, err := strconv.Atoi(user)
+	userID, err := strconv.Atoi(userCookie)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid user ID format",
-		})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid user ID format"})
 	}
-	MediaID, err := strconv.Atoi(id)
+
+	mediaID, err := strconv.Atoi(id)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid media ID format",
-		})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid media ID format"})
 	}
-	result := config.DB.Where("id = ?", MediaID).First(&media)
-	if result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-				"error": fmt.Sprintf("No media found with ID %d", MediaID),
-			})
+
+	if err := config.DB.Where("id = ?", mediaID).First(&media).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": fmt.Sprintf("No media found with ID %d", mediaID)})
 		}
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Error fetching media: " + result.Error.Error(),
-		})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Error fetching media: " + err.Error()})
 	}
-	var existingView model.ViewsMedia
-	viewCheck := config.DB.Where("media_id = ? AND user_id", MediaID, userID).First(&existingView)
-	if viewCheck.Error == nil {
-		return getViewCount(c, MediaID, media)
-	} else if viewCheck.Error != gorm.ErrRecordNotFound {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Error checking view record: " + viewCheck.Error.Error(),
-		})
-	}
-	view := model.ViewsMedia{
-		UserID:  userID,
-		MediaID: MediaID,
-	}
-	if err := config.DB.Create(&view).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to create view: " + err.Error(),
-		})
-	}
-	return getViewCount(c, MediaID, media)
 
+	// Check if the user has already viewed the media
+	// Check if the user has already viewed the media
+	var existingView model.ViewsMedia
+	viewCheck := config.DB.Where("media_id = ? AND user_id = ?", mediaID, userID).First(&existingView)
+
+	if viewCheck.Error == gorm.ErrRecordNotFound {
+		// No existing view, create a new one
+		view := model.ViewsMedia{
+			UserID:  userID,
+			MediaID: mediaID,
+		}
+		if err := config.DB.Create(&view).Error; err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create view: " + err.Error()})
+		}
+	} else if viewCheck.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Error checking view record: " + viewCheck.Error.Error()})
+	}
+
+	// Get the updated view count
+	return getViewCount(c, mediaID, media)
 }
 
-func getViewCount(c *fiber.Ctx, MediaID int, media model.MediaSchema) error {
+func getViewCount(c *fiber.Ctx, mediaID int, media model.MediaSchema) error {
 	var viewCount int64
-	countResult := config.DB.Model(&model.ViewsMedia{}).
-		Where("media_id = ?", MediaID).
-		Count(&viewCount)
-
-	if countResult.Error != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Error counting views: " + countResult.Error.Error(),
-		})
+	if err := config.DB.Model(&model.ViewsMedia{}).Where("media_id = ?", mediaID).Count(&viewCount).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Error counting views: " + err.Error()})
 	}
 
 	ip := os.Getenv("HOST")
 	port := os.Getenv("PORT")
 
-	media.Video = fmt.Sprintf("http://%s%s/%s", ip, port, media.Video)
+	// Format media video URL
+	media.Video = formatURL(ip, port, media.Video)
 
-	if err := config.DB.Model(&media).Where("id = ?", MediaID).Update("view", int(viewCount)).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Error updating view count: " + err.Error(),
-		})
+	// Update view count in the media record
+	if err := config.DB.Model(&media).Where("id = ?", mediaID).Update("view", int(viewCount)).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Error updating view count: " + err.Error()})
 	}
 
-	return c.Status(200).JSON(fiber.Map{
-		"Media": media,
-	})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"media": media})
+}
+
+// Helper function to format media URLs
+func formatURL(ip, port, mediaPath string) string {
+	url := fmt.Sprintf("http://%s", ip)
+	if port != "80" {
+		url = fmt.Sprintf("%s:%s", url, port)
+	}
+	return fmt.Sprintf("%s/%s", url, mediaPath)
 }

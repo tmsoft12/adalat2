@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"time"
 	"tm/controllers/admin/banner/models"
-	utilsBanner "tm/controllers/admin/banner/utils"
 	config "tm/db"
 
 	"github.com/gofiber/fiber/v2"
@@ -55,29 +54,70 @@ func GetBannerById(c *fiber.Ctx) error {
 func CreateBanner(c *fiber.Ctx) error {
 	uploadDir := "./uploads/banners/"
 
-	if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
+	if err := createUploadDir(uploadDir); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Cannot create upload directory"})
 	}
 
-	filePath, err := utilsBanner.SaveFile(c, "bannerimg", uploadDir)
+	filePath, err := uploadBannerFile(c, uploadDir)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Cannot upload image"})
 	}
 
-	banner := new(models.BannerSchema)
-	if err := c.BodyParser(banner); err != nil {
+	banner, err := parseBannerRequest(c, filePath)
+	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse request"})
 	}
 
-	banner.Image = filePath
-	banner.ID = int(time.Now().Unix())
-	banner.Link = c.FormValue("link")
-
-	if err := config.DB.Create(banner).Error; err != nil {
+	if err := saveBannerToDB(banner); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Cannot create banner"})
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(banner)
+}
+
+func createUploadDir(uploadDir string) error {
+	if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
+		return err
+	}
+	return nil
+}
+
+func uploadBannerFile(c *fiber.Ctx, uploadDir string) (string, error) {
+	file, err := c.FormFile("bannerimg")
+	if err != nil {
+		return "", err
+	}
+
+	// Generate a unique file name
+	fileName := fmt.Sprintf("%d_%s", time.Now().UnixNano(), file.Filename)
+	filePath := filepath.Join(uploadDir, fileName)
+
+	if err := c.SaveFile(file, filePath); err != nil {
+		return "", err
+	}
+
+	return filePath, nil
+}
+
+func parseBannerRequest(c *fiber.Ctx, filePath string) (*models.BannerSchema, error) {
+	banner := new(models.BannerSchema)
+	if err := c.BodyParser(banner); err != nil {
+		return nil, err
+	}
+
+	banner.Image = filePath
+	banner.Link = c.FormValue("link")
+	banner.IsActive = true
+
+	return banner, nil
+}
+
+// saveBannerToDB saves the banner to the database
+func saveBannerToDB(banner *models.BannerSchema) error {
+	if err := config.DB.Create(banner).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
 func DeleteBanner(c *fiber.Ctx) error {
@@ -117,66 +157,57 @@ func UpdateBanner(c *fiber.Ctx) error {
 	idParam := c.Params("id")
 	id, err := strconv.Atoi(idParam)
 	if err != nil {
-		fmt.Println("Invalid ID format:", err) // Terminal çıktısı
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid ID format",
 		})
 	}
 
 	var banner models.BannerSchema
-	// Banner'ı veritabanından al
 	if err := config.DB.First(&banner, id).Error; err != nil {
-		fmt.Println("Banner not found:", err) // Terminal çıktısı
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": "Banner not found",
 		})
 	}
 
-	// Yeni değerleri al
 	if err := c.BodyParser(&banner); err != nil {
-		fmt.Println("Cannot parse request:", err) // Terminal çıktısı
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Cannot parse request",
 		})
 	}
 
-	// "is_active" alanını güncelle
 	if isActiveStr := c.FormValue("is_active"); isActiveStr != "" {
-		banner.IsActive = isActiveStr == "true" // "true" string değerine göre boolean'a çevir
+		banner.IsActive = isActiveStr == "true"
 	}
 
-	// Eğer yeni bir resim yükleniyorsa
 	if file, err := c.FormFile("bannerimg"); err == nil {
 		uploadDir := "./uploads/banners/"
 		if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
-			fmt.Println("Cannot create upload directory:", err) // Terminal çıktısı
 			return c.Status(500).JSON(fiber.Map{"error": "Cannot create upload directory"})
 		}
 
-		// Eski resmi sil
 		if banner.Image != "" {
-			oldImagePath := filepath.Join(uploadDir, filepath.Base(banner.Image))
-			fmt.Println("Deleting old image at:", oldImagePath) // Terminal çıktısı
+			oldImagePath := banner.Image // Change to use the stored path directly
 			if err := os.Remove(oldImagePath); err != nil {
-				fmt.Println("Cannot delete old image:", err) // Terminal çıktısı
+				fmt.Println("Cannot delete old image:", err)
 			}
 		}
 
-		// Yeni resmi yükle ve dosya yolunu güncelle
-		filePath := filepath.Join(uploadDir, file.Filename)
+		// Generate a unique file name
+		fileName := fmt.Sprintf("%d_%s", time.Now().UnixNano(), file.Filename)
+		filePath := filepath.Join(uploadDir, fileName)
 		if err := c.SaveFile(file, filePath); err != nil {
-			fmt.Println("Cannot upload image:", err)
 			return c.Status(500).JSON(fiber.Map{"error": "Cannot upload image"})
 		}
-		banner.Image = filePath // Veritabanı için yeni dosya yolunu güncelle
-		fmt.Println("New image uploaded at:", filePath)
+		banner.Image = filePath
 	}
 
 	if err := config.DB.Save(&banner).Error; err != nil {
-		fmt.Println("Cannot update banner:", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Cannot update banner"})
 	}
+	ip := os.Getenv("HOST")
+	port := os.Getenv("PORT")
 
-	fmt.Println("Banner updated successfully:", banner)
+	banner.Image = fmt.Sprintf("http://%s%s/%s", ip, port, banner.Image)
+
 	return c.Status(fiber.StatusOK).JSON(banner)
 }

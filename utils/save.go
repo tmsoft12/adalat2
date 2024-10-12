@@ -9,7 +9,7 @@ import (
 	"golang.org/x/exp/rand"
 )
 
-func SaveFile(c *fiber.Ctx, fieldName, dir string) (string, error) {
+func SaveFiles(c *fiber.Ctx, fieldName, dir string) (string, error) {
 	file, err := c.FormFile(fieldName)
 	if err != nil {
 		return "", err

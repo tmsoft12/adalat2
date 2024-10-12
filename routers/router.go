@@ -28,20 +28,22 @@ func InitRouters(app *fiber.App) {
 
 	homeP := app.Group("api/home")
 	homeP.Get("/", middleware.FakeUser, home.Home_Page)
+	homeP.Get("/:id", middleware.FakeUser, news_page.NewsDetail)
+	homeP.Get("media/:id", media.MediaDetail)
 
-	banner := app.Group("/api/banner")
-	banner.Get("/", controller.GetAllBanner)
-	banner.Get("/:id", controller.GetBannerById)
-	banner.Post("/", controller.CreateBanner)
-	banner.Delete("/:id", controller.DeleteBanner)
-	banner.Put("/:id", controller.UpdateBanner)
+	bannerAdmin := app.Group("/api/admin/banner")
+	bannerAdmin.Get("/", controller.GetAllBanner)       //ok
+	bannerAdmin.Get("/:id", controller.GetBannerById)   //ok
+	bannerAdmin.Post("/", controller.CreateBanner)      //ok
+	bannerAdmin.Delete("/:id", controller.DeleteBanner) //ok
+	bannerAdmin.Put("/:id", controller.UpdateBanner)    //ok
 
-	mediaP := app.Group("/api/media")
-	mediaP.Get("/", media_controller.GetAllMedia)
-	mediaP.Get("/:id", media_controller.GetById)
-	mediaP.Post("/", media_controller.CreateMedia)
-	mediaP.Delete("/:id", media_controller.DeleteMedia)
-	mediaP.Put("/:id", media_controller.UpdateMedia)
+	mediaAdmin := app.Group("/api/admin/media")
+	mediaAdmin.Get("/", media_controller.GetAllMedia)       //ok
+	mediaAdmin.Get("/:id", media_controller.GetById)        //ok
+	mediaAdmin.Post("/", media_controller.CreateMedia)      //ok
+	mediaAdmin.Delete("/:id", media_controller.DeleteMedia) //ok
+	mediaAdmin.Put("/:id", media_controller.UpdateMedia)    //ok
 
 	news := app.Group("api/news")
 	news.Get("/", news_controller.GetAllNews)
@@ -50,12 +52,12 @@ func InitRouters(app *fiber.App) {
 	news.Delete("/:id", news_controller.DeleteNew)
 	news.Put("/:id", news_controller.UpdateNews)
 
-	employerP := app.Group("/api/employer")
-	employerP.Get("/", employer_contrllers.GetAllEmployers)
-	employerP.Post("/", employer_contrllers.CreateEmployer)
-	employerP.Delete("/:id", employer_contrllers.DeleteEmployer)
-	employerP.Put("/:id", employer_contrllers.UpdateEmployer)
-	employerP.Get("/:id", employer_contrllers.GetByIdEmployer)
+	employerAdmin := app.Group("/api/admin/employers")
+	employerAdmin.Get("/", employer_contrllers.GetAllEmployers)
+	employerAdmin.Post("/", employer_contrllers.CreateEmployer)
+	employerAdmin.Delete("/:id", employer_contrllers.DeleteEmployer)
+	employerAdmin.Put("/:id", employer_contrllers.UpdateEmployer)
+	employerAdmin.Get("/:id", employer_contrllers.GetByIdEmployer)
 
 	newsP := app.Group("/api/home")
 	newsP.Get("/", home.Home_Page)

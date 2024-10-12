@@ -24,10 +24,6 @@ func main() {
 	})
 
 	routers.InitRouters(app)
-	app.Use(func(c *fiber.Ctx) error {
-		log.Printf("Request: %s %s", c.Method(), c.Path())
-		return c.Next()
-	})
 
 	log.Fatal(app.Listen(host + port))
 }

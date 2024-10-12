@@ -11,16 +11,20 @@ import (
 	"gorm.io/gorm"
 )
 
+const UserCookieName = "test"
+
 func GetAllNews(c *fiber.Ctx) error {
 	lang := c.Get("Accept-Language", "tm")
 	ip := os.Getenv("HOST")
 	port := os.Getenv("PORT")
 	var news []model.NewsSchema
+
 	if err := config.DB.Find(&news).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Cannot fetch news"})
 	}
+
 	for i := range news {
-		news[i].Image = fmt.Sprintf("http://%s%s/%s", ip, port, news[i].Image)
+		news[i].Image = formatImageURL(ip, port, news[i].Image)
 		switch lang {
 		case "en":
 			news[i].TM_title = news[i].EN_title
@@ -29,6 +33,7 @@ func GetAllNews(c *fiber.Ctx) error {
 			news[i].TM_title = news[i].RU_title
 			news[i].TM_description = news[i].RU_description
 		default:
+			// Default to Turkmen, no action needed
 		}
 	}
 	return c.JSON(news)
@@ -37,7 +42,7 @@ func GetAllNews(c *fiber.Ctx) error {
 func NewsDetail(c *fiber.Ctx) error {
 	var news model.NewsSchema
 	id := c.Params("id")
-	user := c.Cookies("test")
+	user := c.Cookies(UserCookieName)
 
 	userID, err := strconv.Atoi(user)
 	if err != nil {
@@ -75,6 +80,7 @@ func NewsDetail(c *fiber.Ctx) error {
 		})
 	}
 
+	// Create a new view record
 	view := model.Views{
 		UserID: userID,
 		NewsID: NewsID,
@@ -102,7 +108,7 @@ func getViewCount(c *fiber.Ctx, NewsID int, news model.NewsSchema) error {
 	ip := os.Getenv("HOST")
 	port := os.Getenv("PORT")
 
-	news.Image = fmt.Sprintf("http://%s%s/%s", ip, port, news.Image)
+	news.Image = formatImageURL(ip, port, news.Image)
 
 	if err := config.DB.Model(&news).Where("id = ?", NewsID).Update("view", int(viewCount)).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -113,4 +119,13 @@ func getViewCount(c *fiber.Ctx, NewsID int, news model.NewsSchema) error {
 	return c.Status(200).JSON(fiber.Map{
 		"news": news,
 	})
+}
+
+// Helper function to format image URLs
+func formatImageURL(ip, port, imagePath string) string {
+	url := fmt.Sprintf("http://%s", ip)
+	if port != "80" {
+		url = fmt.Sprintf("%s:%s", url, port)
+	}
+	return fmt.Sprintf("%s/%s", url, imagePath)
 }
